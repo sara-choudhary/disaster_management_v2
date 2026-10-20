@@ -2,7 +2,17 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { NetworkEvent } from '../types';
 import { api } from '../services/api';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/network-events';
+const getWsUrl = (): string => {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+  if (typeof window !== 'undefined') {
+    if (window.location.port === '5173') {
+      return 'ws://localhost:8000/ws/network-events';
+    }
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}/ws/network-events`;
+  }
+  return 'ws://localhost:8000/ws/network-events';
+};
 
 interface UseWebSocketOptions {
   onEvent?: (event: NetworkEvent) => void;
@@ -76,7 +86,8 @@ export function useWebSocket({
   // Connect WebSocket
   const connectWs = useCallback(() => {
     try {
-      const ws = new WebSocket(WS_URL);
+      const wsUrl = getWsUrl();
+      const ws = new WebSocket(wsUrl);
       socketRef.current = ws;
 
       ws.onopen = () => {

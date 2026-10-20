@@ -97,3 +97,36 @@ async def websocket_network_events(websocket: WebSocket):
     except Exception as e:
         logger.warning(f"WebSocket error: {e}")
         ws_manager.disconnect(websocket)
+
+
+# Mount Static Frontend SPA (if built)
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
+
+frontend_dist = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../../frontend/dist")
+)
+if os.path.exists(frontend_dist):
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        if (
+            full_path.startswith("api")
+            or full_path.startswith("ws")
+            or full_path in ["docs", "openapi.json", "redoc", "health"]
+        ):
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        # Check if requested path corresponds to a static file (e.g. favicon, vite.svg)
+        potential_file = os.path.join(frontend_dist, full_path)
+        if full_path and os.path.isfile(potential_file):
+            return FileResponse(potential_file)
+
+        # Fallback to SPA index.html for client-side routing
+        index_file = os.path.join(frontend_dist, "index.html")
+        return FileResponse(index_file)
