@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+backend/network_emergency.db
+backend/test_network.db
+
+# Logs
+*.log
+
+# Node dependencies
+node_modules/
+dist/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
